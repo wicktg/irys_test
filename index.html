@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>IRYS Reward Checker</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(to bottom right, #101820, #1a1f25);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+        color: #ffffff;
+      }
+
+      h1 {
+        color: #51ffd6;
+        font-size: 32px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      h1 img {
+        height: 36px;
+        border-radius: 6px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      input {
+        padding: 14px 18px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 2px solid #51ffd6;
+        background-color: transparent;
+        color: #ffffff;
+        width: 280px;
+        outline: none;
+        transition: 0.2s;
+      }
+
+      input:focus {
+        border-color: #ffffff;
+      }
+
+      button {
+        padding: 14px 22px;
+        font-size: 16px;
+        background-color: #51ffd6;
+        color: #101820;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s ease-in-out;
+      }
+
+      button:hover {
+        background-color: #3eeac2;
+      }
+
+      .output-box {
+        background: #181f26;
+        padding: 32px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        min-width: 300px;
+        max-width: 600px;
+        animation: fadeIn 0.4s ease-in-out;
+        text-align: center;
+        color: #ffffff;
+        border: 2px solid #51ffd6;
+        margin-top: 20px;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .output-box strong {
+        font-size: 26px;
+        color: #51ffd6;
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      .error {
+        background: #2a2a2a;
+        color: #ff6b6b;
+        font-weight: bold;
+        padding: 16px 20px;
+        border-radius: 10px;
+        border: 2px solid #ff6b6b;
+        box-shadow: 0 6px 12px rgba(255, 107, 107, 0.1);
+        max-width: 400px;
+        text-align: center;
+        margin-top: 20px;
+        animation: popFade 0.3s ease-in-out;
+      }
+
+      .slider-container {
+        margin-top: 24px;
+        text-align: left;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        background: #555;
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        background-color: #51ffd6;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background-color: #51ffd6;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .fdv-label,
+      .usd-estimate {
+        margin-top: 12px;
+        font-size: 16px;
+        color: #ccc;
+      }
+
+      .usd-estimate strong {
+        color: #51ffd6;
+        font-size: 24px;
+        display: block;
+        margin-top: 6px;
+      }
+
+      .powered-by {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 14px;
+        color: #51ffd6;
+      }
+
+      .powered-by a {
+        color: #51ffd6;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .powered-by a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes popFade {
+        0% {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .loader {
+        border: 6px solid #1a1f25;
+        border-top: 6px solid #51ffd6;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 40px auto 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="powered-by">
+      Powered by
+      <a href="https://x.com/valordefi" target="_blank">@valordefi</a>
+    </div>
+
+    <h1>
+      <img src="iryslogo.jpg" alt="IRYS Logo" />
+      IRYS Reward Checker
+    </h1>
+
+    <div class="input-group">
+      <input type="text" id="usernameInput" placeholder="Enter X username" />
+      <button onclick="checkLeaderboard()">Check</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+      let finalReward = 0;
+
+      async function checkLeaderboard() {
+        const username = document.getElementById("usernameInput").value.trim();
+        const output = document.getElementById("output");
+        output.innerHTML = `<div class="loader"></div>`;
+
+        if (!username) {
+          output.innerHTML =
+            "<div class='error'>⚠️ Please enter a username.</div>";
+          return;
+        }
+
+        try {
+          const userRes = await fetch(
+            `https://gomtu.xyz/api/yap/open?username=${username}`
+          );
+          const userJson = await userRes.json();
+          const userId = userJson?.data?.user_id;
+
+          if (!userId) {
+            output.innerHTML =
+              "<div class='error'>User not found or no data available.</div>";
+            return;
+          }
+
+          const rankRes = await fetch(
+            `https://gomtu.xyz/api/kaito/leaderboard-rank?ticker=IRYS&duration=7D,30D,3M,6M&userId=${userId}`
+          );
+          const rankJson = await rankRes.json();
+
+          const durationsToShow = ["7D", "30D", "3M", "6M"];
+          const filtered = rankJson.data.filter((entry) =>
+            durationsToShow.includes(entry.duration)
+          );
+
+          let totalUserMindshare = filtered.reduce(
+            (sum, item) => sum + item.mindshare,
+            0
+          );
+
+          if (filtered.length === 0 || totalUserMindshare === 0) {
+            output.innerHTML = `
+              <div class='error'>
+                Sorry, you are <strong>not eligible</strong> for $IRYS rewards.<br />
+                <div style="font-weight: normal; margin-top: 8px;">Yap harder :)</div>
+              </div>`;
+            return;
+          }
+
+          const totalPool = 7500000;
+          const totalGlobalMindshare = 1270;
+          const rawReward =
+            (totalUserMindshare / totalGlobalMindshare) * totalPool;
+          finalReward = Math.min(rawReward, 25000);
+
+          output.innerHTML = `
+            <div class='output-box'>
+              <strong>${finalReward.toFixed(2)} $IRYS</strong>
+              <div>Estimated reward based on your leaderboard rankings.</div>
+              <div class="slider-container">
+                <div style="margin-top: 20px; font-weight: bold; color: #51ffd6">
+                  Simulate FDV: <span id="fdvLabel">$1.00B</span>
+                </div>
+                <input type="range" id="fdvSlider" min="1" max="5000" step="1" value="1000" />
+                <div class="usd-estimate">
+                  Your reward would be worth
+                  <strong id="rewardUSD">~$${(finalReward * 1).toFixed(
+                    2
+                  )}</strong>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const fdvSlider = document.getElementById("fdvSlider");
+          const fdvLabel = document.getElementById("fdvLabel");
+          const rewardUSD = document.getElementById("rewardUSD");
+
+          function formatFDV(millions) {
+            if (millions < 1000) {
+              return `$${millions}M`;
+            } else {
+              return `$${(millions / 1000).toFixed(2)}B`;
+            }
+          }
+
+          function updateReward(fdvMillions) {
+            const fdv = fdvMillions * 1_000_000;
+            const totalSupply = 1_000_000_000;
+            const pricePerToken = fdv / totalSupply;
+            const usdValue = finalReward * pricePerToken;
+            fdvLabel.textContent = formatFDV(fdvMillions);
+            rewardUSD.innerHTML = `~$${usdValue.toFixed(2)}`;
+          }
+
+          fdvSlider.addEventListener("input", (e) => {
+            updateReward(parseInt(e.target.value));
+          });
+
+          updateReward(1000); // Default at $1B
+        } catch (err) {
+          output.innerHTML = `<div class='error'>🚫 Error: ${err.message}</div>`;
+        }
+      }
+    </script>
+  </body>
+</html>
