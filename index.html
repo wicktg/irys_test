@@ -43,7 +43,7 @@
         justify-content: center;
       }
 
-      input {
+      input[type="text"] {
         padding: 14px 18px;
         font-size: 16px;
         border-radius: 8px;
@@ -55,7 +55,7 @@
         transition: 0.2s;
       }
 
-      input:focus {
+      input[type="text"]:focus {
         border-color: #ffffff;
       }
 
@@ -254,7 +254,6 @@
 
         try {
           const userRes = await fetch(`/api/user?username=${username}`);
-
           const userJson = await userRes.json();
           const userId = userJson?.data?.user_id;
 
@@ -265,7 +264,6 @@
           }
 
           const rankRes = await fetch(`/api/rank?userId=${userId}`);
-
           const rankJson = await rankRes.json();
 
           const durationsToShow = ["7D", "30D", "3M", "6M"];
@@ -273,30 +271,37 @@
             durationsToShow.includes(entry.duration)
           );
 
-          let totalUserMindshare = filtered.reduce(
+          const totalMindshare = filtered.reduce(
             (sum, item) => sum + item.mindshare,
             0
           );
 
-          if (filtered.length === 0 || totalUserMindshare === 0) {
+          if (totalMindshare <= 0) {
             output.innerHTML = `
               <div class='error'>
-                Sorry, you are <strong>not eligible</strong> for $IRYS rewards.<br />
-                <div style="font-weight: normal; margin-top: 8px;">Yap harder 🙂</div>
+                Sorry, you're <strong>not eligible</strong> for $IRYS rewards.<br/>
+                <div style="font-weight: normal; margin-top: 8px;">You need at least some mindshare on any leaderboard.</div>
               </div>`;
             return;
           }
 
+          const activeDurations = filtered.filter(
+            (item) => item.mindshare > 0
+          ).length;
+
           const totalPool = 7500000;
           const totalGlobalMindshare = 1270;
-          const rawReward =
-            (totalUserMindshare / totalGlobalMindshare) * totalPool;
+
+          const rawShare = (totalMindshare / totalGlobalMindshare) * totalPool;
+          const boostFactor = 1 + (activeDurations - 1) / 3;
+          const rawReward = rawShare * boostFactor;
+
           finalReward = Math.min(rawReward, 25000);
 
           output.innerHTML = `
             <div class='output-box'>
               <strong>${finalReward.toFixed(2)} $IRYS</strong>
-              <div>Estimated reward based on your leaderboard rankings.</div>
+              <div>Estimated reward based on your leaderboard presence and mindshare.</div>
               <div class="slider-container">
                 <div style="margin-top: 20px; font-weight: bold; color: #51ffd6">
                   Simulate FDV: <span id="fdvLabel">$1.00B</span>
@@ -335,9 +340,11 @@
             updateReward(parseInt(e.target.value));
           });
 
-          updateReward(1000); // Default at $1B FDV
+          updateReward(1000);
         } catch (err) {
-          output.innerHTML = `<div class='error'>🚫 Error: ${err.message}</div>`;
+          output.innerHTML = `<div class='error'>🚫 Error: ${
+            err.message || "Something went wrong"
+          }</div>`;
         }
       }
     </script>
