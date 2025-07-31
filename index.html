@@ -253,9 +253,8 @@
         }
 
         try {
-          const userRes = await fetch(
-            `https://gomtu.xyz/api/yap/open?username=${username}`
-          );
+          const userRes = await fetch(`/api/user?username=${username}`);
+
           const userJson = await userRes.json();
           const userId = userJson?.data?.user_id;
 
@@ -265,9 +264,8 @@
             return;
           }
 
-          const rankRes = await fetch(
-            `https://gomtu.xyz/api/kaito/leaderboard-rank?ticker=IRYS&duration=7D,30D,3M,6M&userId=${userId}`
-          );
+          const rankRes = await fetch(`/api/rank?userId=${userId}`);
+
           const rankJson = await rankRes.json();
 
           const durationsToShow = ["7D", "30D", "3M", "6M"];
@@ -284,7 +282,7 @@
             output.innerHTML = `
               <div class='error'>
                 Sorry, you are <strong>not eligible</strong> for $IRYS rewards.<br />
-                <div style="font-weight: normal; margin-top: 8px;">Yap harder :)</div>
+                <div style="font-weight: normal; margin-top: 8px;">Yap harder 🙂</div>
               </div>`;
             return;
           }
@@ -319,11 +317,9 @@
           const rewardUSD = document.getElementById("rewardUSD");
 
           function formatFDV(millions) {
-            if (millions < 1000) {
-              return `$${millions}M`;
-            } else {
-              return `$${(millions / 1000).toFixed(2)}B`;
-            }
+            return millions < 1000
+              ? `$${millions}M`
+              : `$${(millions / 1000).toFixed(2)}B`;
           }
 
           function updateReward(fdvMillions) {
@@ -339,7 +335,7 @@
             updateReward(parseInt(e.target.value));
           });
 
-          updateReward(1000); // Default at $1B
+          updateReward(1000); // Default at $1B FDV
         } catch (err) {
           output.innerHTML = `<div class='error'>🚫 Error: ${err.message}</div>`;
         }
